@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(command -v bun)",
+      "Bash(command -v npm)",
+      "PowerShell(Get-Command node -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Command npm -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Command bun -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Command npx -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Command winget -ErrorAction SilentlyContinue)",
+      "PowerShell(winget install -e --id OpenJS.NodeJS.LTS --accept-package-agreements --accept-source-agreements)",
+      "PowerShell(winget install -e --id OpenJS.NodeJS.LTS --source winget --accept-package-agreements --accept-source-agreements)",
+      "Bash(sleep 5; cat \"/c/Users/anton/AppData/Local/Temp/claude/c--Users-anton-OneDrive-Desktop-Project-Harmony-Suite/6d528808-a5d6-499e-9949-f7ed060a820d/tasks/by1jjdl41.output\" 2>&1 | tail -50)",
+      "Read(//c/Users/anton/AppData/Local/Temp/claude/c--Users-anton-OneDrive-Desktop-Project-Harmony-Suite/6d528808-a5d6-499e-9949-f7ed060a820d/tasks/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8080/showroom-3d)",
+      "Bash(curl -s http://localhost:8080/showroom-3d)",
+      "Bash(curl -s http://localhost:8080/showroom-3d -o /tmp/out.html)",
+      "Read(//tmp/**)",
+      "Bash(curl -s -o /dev/null -w \"showroom-3d: %{http_code}\\\\n\" http://localhost:8080/showroom-3d)",
+      "Bash(curl -s -o /dev/null -w \"home: %{http_code}\\\\n\" http://localhost:8080/)",
+      "Bash(curl -s -o /dev/null -w \"projetos: %{http_code}\\\\n\" http://localhost:8080/projetos)"
+    ]
+  }
+}

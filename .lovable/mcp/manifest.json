@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "m7-movelaria-mcp",
+      "version": "0.1.0",
+      "title": "M7 Movelaria Showroom"
+    },
+    "tools": [
+      {
+        "name": "list_projects",
+        "title": "List projects",
+        "description": "List all M7 Movelaria showcase projects with client, architect, and ambient count.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_project",
+        "title": "Get project details",
+        "description": "Return full details for a single M7 Movelaria project by slug, including every ambient, hotspot, materials, ferragens, iluminação, and diferenciais.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Project slug, e.g. 'residencia-aurora'."
+            }
+          },
+          "required": [
+            "slug"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_ferragens",
+        "title": "List ferragens padrão M7",
+        "description": "List the standard hardware, lighting, and materials M7 Movelaria uses on its projects (Häfele, Salice, Rometal, FGV, Zen, MDFs).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "contact_info",
+        "title": "M7 Movelaria contact info",
+        "description": "Return M7 Movelaria's public contact information (phone, WhatsApp, hours).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

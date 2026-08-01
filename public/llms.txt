@@ -1,0 +1,10 @@
+# M7 Movelaria
+
+> Marcenaria de alto padrão em São José dos Pinhais (PR): móveis planejados sob medida, cozinhas, dormitórios, closets, escritórios e ambientes comerciais, com ferragens premium (Blum, Häfele, Salice) e acabamentos em laca, lâmina 45° e serralheria.
+
+## Pages
+
+- [Início](/): Apresentação da M7 Movelaria, serviços, materiais premium, portfólio e depoimentos.
+- [Showroom 3D Interativo](/showroom-3d): Planta viva com ambientes em 360° (sala, cozinha, closet, escritório).
+- [Projetos](/projetos): Portfólio de projetos executados com hotspots interativos de materiais e ferragens.
+- [Contato](/contato): Canais para solicitar orçamento — WhatsApp e e-mail.
