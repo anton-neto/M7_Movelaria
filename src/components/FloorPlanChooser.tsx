@@ -106,14 +106,14 @@ export function FloorPlanChooser({
         Mobile: when a fullscreen button shares the bottom-right corner (Android/desktop),
         this is parked tight against it (right-16, not centered) so it stays clear of the
         hall marker at x:50%/y:88%. When there's no button to dodge (iOS — see centerHint),
-        it goes back to dead-center on screen, well clear of every marker.
+        it's bottom-center at the same height, matching the panorama view's "Arraste a tela" hint.
         sm and up: always the original centered, single-line placement at the bottom.
       */}
       <div
-        className={`absolute w-max whitespace-nowrap sm:max-w-[92%] text-center bg-black/60 backdrop-blur text-white/80 text-[7px] sm:text-[11px] tracking-normal sm:tracking-widest px-2 sm:px-4 py-1.5 sm:py-2 border border-white/10 uppercase pointer-events-none ${
+        className={`absolute bottom-3 sm:bottom-4 w-max whitespace-nowrap sm:max-w-[92%] text-center bg-black/60 backdrop-blur text-white/80 text-[7px] sm:text-[11px] tracking-normal sm:tracking-widest px-2 sm:px-4 py-1.5 sm:py-2 border border-white/10 uppercase pointer-events-none ${
           centerHint
-            ? "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 sm:top-auto sm:translate-y-0 sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2"
-            : "bottom-3 right-16 sm:right-auto sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2"
+            ? "left-1/2 -translate-x-1/2"
+            : "right-16 sm:right-auto sm:left-1/2 sm:-translate-x-1/2"
         }`}
       >
         <span className="sm:hidden">Toque num ambiente</span>
