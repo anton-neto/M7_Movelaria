@@ -206,6 +206,7 @@ function Showroom3DPage() {
                 projects={projects.map((p) => ({ slug: p.slug, name: p.name, client: p.client }))}
                 selectedProjectSlug={selectedProjectSlug}
                 onSelectProject={setSelectedProjectSlug}
+                isIOS={isIOS}
               />
             )}
 

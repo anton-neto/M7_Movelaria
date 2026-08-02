@@ -11,6 +11,9 @@ type Props = {
   projects: ProjectOption[];
   selectedProjectSlug: string;
   onSelectProject: (slug: string) => void;
+  /** True when there's no fullscreen button competing for the bottom-right corner
+   *  (iOS) — the hint can sit flush in the corner instead of leaving it room. */
+  isIOS?: boolean;
 };
 
 export function FloorPlanChooser({
@@ -19,6 +22,7 @@ export function FloorPlanChooser({
   projects,
   selectedProjectSlug,
   onSelectProject,
+  isIOS = false,
 }: Props) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
@@ -99,11 +103,17 @@ export function FloorPlanChooser({
       ))}
 
       {/*
-        Mobile: parked tight against the bottom-right corner (right-16, not centered) so
-        it stays clear of the hall marker at x:50%/y:88% — a centered bar there collides
-        with it. sm and up: original centered, single-line placement at the bottom.
+        Mobile: parked tight against the bottom-right corner so it stays clear of the
+        hall marker at x:50%/y:88% — a centered bar there collides with it. On iOS
+        there's no fullscreen button sharing that corner (see isIOS), so it can sit
+        flush against the edge (right-3) instead of leaving room for one (right-16).
+        sm and up: original centered, single-line placement at the bottom.
       */}
-      <div className="absolute bottom-3 right-16 sm:right-auto sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2 w-max whitespace-nowrap sm:max-w-[92%] text-center bg-black/60 backdrop-blur text-white/80 text-[7px] sm:text-[11px] tracking-normal sm:tracking-widest px-2 sm:px-4 py-1.5 sm:py-2 border border-white/10 uppercase pointer-events-none">
+      <div
+        className={`absolute bottom-3 sm:right-auto sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2 w-max whitespace-nowrap sm:max-w-[92%] text-center bg-black/60 backdrop-blur text-white/80 text-[7px] sm:text-[11px] tracking-normal sm:tracking-widest px-2 sm:px-4 py-1.5 sm:py-2 border border-white/10 uppercase pointer-events-none ${
+          isIOS ? "right-3" : "right-16"
+        }`}
+      >
         <span className="sm:hidden">Toque num ambiente</span>
         <span className="hidden sm:inline">Toque em um ambiente para entrar no tour 360°</span>
       </div>
