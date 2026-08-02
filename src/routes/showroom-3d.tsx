@@ -93,7 +93,14 @@ function Showroom3DPage() {
       document.exitFullscreen().catch(() => {});
       return;
     }
-    if (document.fullscreenEnabled && viewerRef.current) {
+    // Touch devices get wildly inconsistent results from the native Fullscreen API
+    // across mobile browsers (works great on some, silently fails to actually resize
+    // on others) — the CSS fallback is fully within our control and behaves the same
+    // everywhere, so skip native entirely there and only use it on desktop/mouse input.
+    const isTouchDevice =
+      typeof window !== "undefined" &&
+      (navigator.maxTouchPoints > 0 || "ontouchstart" in window);
+    if (!isTouchDevice && document.fullscreenEnabled && viewerRef.current) {
       viewerRef.current.requestFullscreen().catch(() => setCssFullscreen(true));
     } else {
       setCssFullscreen(true);
@@ -132,7 +139,7 @@ function Showroom3DPage() {
           <div
             ref={viewerRef}
             className={`relative w-full border border-bronze/20 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] overflow-hidden bg-black ${
-              cssFullscreen
+              isFullscreen
                 ? "fixed inset-0 z-[200] h-[100dvh] w-[100dvw] border-0"
                 : "h-[55vh] min-h-[380px] sm:h-[70vh] sm:min-h-[500px] md:h-[75vh] md:min-h-[560px]"
             }`}
