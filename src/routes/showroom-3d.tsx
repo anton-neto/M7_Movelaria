@@ -20,6 +20,18 @@ const PanoramaViewer = lazy(() =>
   import("@/components/PanoramaViewer").then((m) => ({ default: m.PanoramaViewer })),
 );
 
+// iOS Safari (iPhone/iPad) is the one platform where the native Fullscreen API is
+// unreliable — it can report itself as supported yet silently fail to actually resize
+// the element, and there's no way to hide Safari's own address bar from a normal tab
+// either way. Android Chrome/Firefox/Samsung Internet and desktop browsers all handle
+// native fullscreen properly (true edge-to-edge, browser chrome hidden).
+function isIOSDevice() {
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
+}
+
 export const Route = createFileRoute("/showroom-3d")({
   head: () => ({
     meta: [
@@ -52,10 +64,15 @@ function Showroom3DPage() {
   // everywhere — the button should always do *something* useful, not just disappear.
   const [cssFullscreen, setCssFullscreen] = useState(false);
   const isFullscreen = nativeFullscreen || cssFullscreen;
+  const [isIOS, setIsIOS] = useState(false);
   const [selectedProjectSlug, setSelectedProjectSlug] = useState(projects[0].slug);
   const viewerRef = useRef<HTMLDivElement>(null);
 
   const selectedRoom = rooms.find((r) => r.id === selectedRoomId) ?? null;
+
+  useEffect(() => {
+    setIsIOS(isIOSDevice());
+  }, []);
 
   useEffect(() => {
     const onChange = () => setNativeFullscreen(document.fullscreenElement === viewerRef.current);
@@ -93,15 +110,6 @@ function Showroom3DPage() {
       document.exitFullscreen().catch(() => {});
       return;
     }
-    // iOS Safari (iPhone/iPad) is the one platform where the native Fullscreen API is
-    // unreliable — it can report itself as supported yet silently fail to actually
-    // resize the element. Android Chrome/Firefox/Samsung Internet and desktop browsers
-    // all handle it properly (true edge-to-edge, browser chrome hidden), so only iOS
-    // gets routed to the CSS fallback.
-    const isIOS =
-      typeof navigator !== "undefined" &&
-      (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
-        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
     if (!isIOS && document.fullscreenEnabled && viewerRef.current) {
       viewerRef.current.requestFullscreen().catch(() => setCssFullscreen(true));
     } else {
@@ -146,24 +154,31 @@ function Showroom3DPage() {
                 : "h-[55vh] min-h-[380px] sm:h-[70vh] sm:min-h-[500px] md:h-[75vh] md:min-h-[560px]"
             }`}
           >
-            <button
-              onClick={toggleFullscreen}
-              className={`absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-30 flex items-center bg-black/60 hover:bg-black/80 backdrop-blur text-white tracking-widest border border-white/15 uppercase transition-colors ${
-                isFullscreen
-                  ? "gap-0 p-2.5 sm:gap-3 sm:text-base sm:px-6 sm:py-3"
-                  : "gap-0 p-2.5 sm:gap-2 sm:text-[11px] sm:px-4 sm:py-2"
-              }`}
-              aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
-            >
-              {isFullscreen ? (
-                <Minimize className="w-4 h-4 sm:w-5 sm:h-5" />
-              ) : (
-                <Maximize className="w-4 h-4" />
-              )}
-              <span className="hidden sm:inline">
-                {isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
-              </span>
-            </button>
+            {/*
+              No point offering fullscreen on iOS: Safari can't hide its own address bar
+              for a regular page no matter what we do, so the button would just be
+              confusing there. Android/desktop get the real thing.
+            */}
+            {!isIOS && (
+              <button
+                onClick={toggleFullscreen}
+                className={`absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-30 flex items-center bg-black/60 hover:bg-black/80 backdrop-blur text-white tracking-widest border border-white/15 uppercase transition-colors ${
+                  isFullscreen
+                    ? "gap-0 p-2.5 sm:gap-3 sm:text-base sm:px-6 sm:py-3"
+                    : "gap-0 p-2.5 sm:gap-2 sm:text-[11px] sm:px-4 sm:py-2"
+                }`}
+                aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+              >
+                {isFullscreen ? (
+                  <Minimize className="w-4 h-4 sm:w-5 sm:h-5" />
+                ) : (
+                  <Maximize className="w-4 h-4" />
+                )}
+                <span className="hidden sm:inline">
+                  {isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+                </span>
+              </button>
+            )}
             {selectedRoom ? (
               <Suspense
                 fallback={
@@ -191,6 +206,7 @@ function Showroom3DPage() {
                 projects={projects.map((p) => ({ slug: p.slug, name: p.name, client: p.client }))}
                 selectedProjectSlug={selectedProjectSlug}
                 onSelectProject={setSelectedProjectSlug}
+                centerHint={isIOS}
               />
             )}
 
