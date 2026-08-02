@@ -426,19 +426,14 @@ export function PanoramaViewer({
         </div>
       )}
 
-      {/*
-        Mobile: anchored bottom-right, right next to the fullscreen toggle button
-        (right-16, not centered), sized to its short text on one line, centered within
-        its own pill. sm and up: centered, single line, there's enough room there.
-      */}
       <div
-        className={`absolute bottom-3 right-16 sm:right-auto sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2 z-30 w-max whitespace-nowrap text-center bg-black/60 backdrop-blur text-white/80 tracking-normal sm:tracking-widest border border-white/10 uppercase pointer-events-none ${
+        className={`absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-30 w-max whitespace-nowrap text-center bg-black/60 backdrop-blur text-white/80 tracking-normal sm:tracking-widest border border-white/10 uppercase pointer-events-none ${
           fullscreen
-            ? "text-[7px] px-2 py-1.5 sm:text-base sm:px-6 sm:py-3"
-            : "text-[7px] px-2 py-1.5 sm:text-[11px] sm:px-4 sm:py-2"
+            ? "text-[9px] px-2.5 py-1.5 sm:text-base sm:px-6 sm:py-3"
+            : "text-[9px] px-2.5 py-1.5 sm:text-[11px] sm:px-4 sm:py-2"
         }`}
       >
-        <span className="sm:hidden">Arraste · Belisque</span>
+        <span className="sm:hidden">Arraste</span>
         <span className="hidden sm:inline">
           Arraste para olhar · Scroll para zoom · Clique nos pontos dourados
         </span>

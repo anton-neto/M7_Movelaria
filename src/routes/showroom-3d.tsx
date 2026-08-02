@@ -46,24 +46,33 @@ export const Route = createFileRoute("/showroom-3d")({
 function Showroom3DPage() {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [detail, setDetail] = useState<{ h: Hotspot; room: Room } | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [fullscreenSupported, setFullscreenSupported] = useState(false);
+  const [nativeFullscreen, setNativeFullscreen] = useState(false);
+  // iOS Safari (most iPhones) doesn't support the native Fullscreen API for regular
+  // elements, so this is a CSS-only fallback (fixed, fills the viewport) that works
+  // everywhere — the button should always do *something* useful, not just disappear.
+  const [cssFullscreen, setCssFullscreen] = useState(false);
+  const isFullscreen = nativeFullscreen || cssFullscreen;
   const [selectedProjectSlug, setSelectedProjectSlug] = useState(projects[0].slug);
   const viewerRef = useRef<HTMLDivElement>(null);
 
   const selectedRoom = rooms.find((r) => r.id === selectedRoomId) ?? null;
 
   useEffect(() => {
-    const onChange = () => setIsFullscreen(document.fullscreenElement === viewerRef.current);
+    const onChange = () => setNativeFullscreen(document.fullscreenElement === viewerRef.current);
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
 
-  // iOS Safari (most iPhones) doesn't support the Fullscreen API for regular
-  // elements — feature-detect so the button doesn't sit there silently failing.
+  // Lock page scroll while the CSS fallback is active (native fullscreen does this
+  // automatically; this fallback doesn't leave the normal document flow).
   useEffect(() => {
-    setFullscreenSupported(document.fullscreenEnabled ?? false);
-  }, []);
+    if (!cssFullscreen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [cssFullscreen]);
 
   // Warm up the heavy three.js/panorama chunk and images while the person is still
   // looking at the floor plan, so clicking a room doesn't sit on a cold load.
@@ -76,10 +85,18 @@ function Showroom3DPage() {
   }, []);
 
   const toggleFullscreen = () => {
+    if (cssFullscreen) {
+      setCssFullscreen(false);
+      return;
+    }
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => {});
+      return;
+    }
+    if (document.fullscreenEnabled && viewerRef.current) {
+      viewerRef.current.requestFullscreen().catch(() => setCssFullscreen(true));
     } else {
-      viewerRef.current?.requestFullscreen().catch(() => {});
+      setCssFullscreen(true);
     }
   };
 
@@ -114,28 +131,30 @@ function Showroom3DPage() {
         <section className="pb-10 sm:pb-16 max-w-7xl mx-auto px-3 sm:px-4">
           <div
             ref={viewerRef}
-            className="relative w-full h-[55vh] min-h-[380px] sm:h-[70vh] sm:min-h-[500px] md:h-[75vh] md:min-h-[560px] border border-bronze/20 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] overflow-hidden bg-black"
+            className={`relative w-full border border-bronze/20 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] overflow-hidden bg-black ${
+              cssFullscreen
+                ? "fixed inset-0 z-[200] h-screen w-screen border-0"
+                : "h-[55vh] min-h-[380px] sm:h-[70vh] sm:min-h-[500px] md:h-[75vh] md:min-h-[560px]"
+            }`}
           >
-            {fullscreenSupported && (
-              <button
-                onClick={toggleFullscreen}
-                className={`absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-30 flex items-center bg-black/60 hover:bg-black/80 backdrop-blur text-white tracking-widest border border-white/15 uppercase transition-colors ${
-                  isFullscreen
-                    ? "gap-0 p-2.5 sm:gap-3 sm:text-base sm:px-6 sm:py-3"
-                    : "gap-0 p-2.5 sm:gap-2 sm:text-[11px] sm:px-4 sm:py-2"
-                }`}
-                aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
-              >
-                {isFullscreen ? (
-                  <Minimize className="w-4 h-4 sm:w-5 sm:h-5" />
-                ) : (
-                  <Maximize className="w-4 h-4" />
-                )}
-                <span className="hidden sm:inline">
-                  {isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
-                </span>
-              </button>
-            )}
+            <button
+              onClick={toggleFullscreen}
+              className={`absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-30 flex items-center bg-black/60 hover:bg-black/80 backdrop-blur text-white tracking-widest border border-white/15 uppercase transition-colors ${
+                isFullscreen
+                  ? "gap-0 p-2.5 sm:gap-3 sm:text-base sm:px-6 sm:py-3"
+                  : "gap-0 p-2.5 sm:gap-2 sm:text-[11px] sm:px-4 sm:py-2"
+              }`}
+              aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+            >
+              {isFullscreen ? (
+                <Minimize className="w-4 h-4 sm:w-5 sm:h-5" />
+              ) : (
+                <Maximize className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline">
+                {isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+              </span>
+            </button>
             {selectedRoom ? (
               <Suspense
                 fallback={
