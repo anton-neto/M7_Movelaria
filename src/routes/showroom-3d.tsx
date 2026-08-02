@@ -47,6 +47,7 @@ function Showroom3DPage() {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [detail, setDetail] = useState<{ h: Hotspot; room: Room } | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenSupported, setFullscreenSupported] = useState(false);
   const [selectedProjectSlug, setSelectedProjectSlug] = useState(projects[0].slug);
   const viewerRef = useRef<HTMLDivElement>(null);
 
@@ -56,6 +57,12 @@ function Showroom3DPage() {
     const onChange = () => setIsFullscreen(document.fullscreenElement === viewerRef.current);
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  // iOS Safari (most iPhones) doesn't support the Fullscreen API for regular
+  // elements — feature-detect so the button doesn't sit there silently failing.
+  useEffect(() => {
+    setFullscreenSupported(document.fullscreenEnabled ?? false);
   }, []);
 
   // Warm up the heavy three.js/panorama chunk and images while the person is still
@@ -70,9 +77,9 @@ function Showroom3DPage() {
 
   const toggleFullscreen = () => {
     if (document.fullscreenElement) {
-      document.exitFullscreen();
+      document.exitFullscreen().catch(() => {});
     } else {
-      viewerRef.current?.requestFullscreen();
+      viewerRef.current?.requestFullscreen().catch(() => {});
     }
   };
 
@@ -104,21 +111,31 @@ function Showroom3DPage() {
           </div>
         </section>
 
-        <section className="pb-16 max-w-7xl mx-auto px-4">
+        <section className="pb-10 sm:pb-16 max-w-7xl mx-auto px-3 sm:px-4">
           <div
             ref={viewerRef}
-            className="relative w-full h-[75vh] min-h-[560px] border border-bronze/20 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] overflow-hidden bg-black"
+            className="relative w-full h-[55vh] min-h-[380px] sm:h-[70vh] sm:min-h-[500px] md:h-[75vh] md:min-h-[560px] border border-bronze/20 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] overflow-hidden bg-black"
           >
-            <button
-              onClick={toggleFullscreen}
-              className={`absolute bottom-4 right-4 z-30 flex items-center bg-black/60 hover:bg-black/80 backdrop-blur text-white tracking-widest border border-white/15 uppercase transition-colors ${
-                isFullscreen ? "gap-3 text-base px-6 py-3" : "gap-2 text-[11px] px-4 py-2"
-              }`}
-              aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
-            >
-              {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-4 h-4" />}
-              {isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
-            </button>
+            {fullscreenSupported && (
+              <button
+                onClick={toggleFullscreen}
+                className={`absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-30 flex items-center bg-black/60 hover:bg-black/80 backdrop-blur text-white tracking-widest border border-white/15 uppercase transition-colors ${
+                  isFullscreen
+                    ? "gap-0 p-2.5 sm:gap-3 sm:text-base sm:px-6 sm:py-3"
+                    : "gap-0 p-2.5 sm:gap-2 sm:text-[11px] sm:px-4 sm:py-2"
+                }`}
+                aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+              >
+                {isFullscreen ? (
+                  <Minimize className="w-4 h-4 sm:w-5 sm:h-5" />
+                ) : (
+                  <Maximize className="w-4 h-4" />
+                )}
+                <span className="hidden sm:inline">
+                  {isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+                </span>
+              </button>
+            )}
             {selectedRoom ? (
               <Suspense
                 fallback={
@@ -156,19 +173,21 @@ function Showroom3DPage() {
               would silently stop rendering the moment fullscreen is entered.
             */}
             {detail && (
-              <div className="fixed top-0 right-0 h-full w-full max-w-sm bg-black/90 backdrop-blur-xl border-l border-bronze/20 text-white p-8 z-[100] overflow-y-auto animate-in slide-in-from-right duration-300">
+              <div className="fixed top-0 right-0 h-full w-full max-w-sm bg-black/90 backdrop-blur-xl border-l border-bronze/20 text-white p-5 sm:p-8 z-[100] overflow-y-auto animate-in slide-in-from-right duration-300">
                 <button
                   onClick={() => setDetail(null)}
-                  className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-bronze transition-colors flex items-center justify-center"
+                  className="absolute top-3 right-3 sm:top-4 sm:right-4 w-9 h-9 rounded-full bg-white/10 hover:bg-bronze transition-colors flex items-center justify-center"
                   aria-label="Fechar"
                 >
                   <X className="w-4 h-4" />
                 </button>
 
-                <p className="text-[10px] uppercase tracking-[0.35em] text-bronze">
+                <p className="text-[10px] uppercase tracking-[0.35em] text-bronze pr-10">
                   {detail.h.categoria}
                 </p>
-                <h4 className="font-display text-3xl mt-2 leading-tight">{detail.h.label}</h4>
+                <h4 className="font-display text-2xl sm:text-3xl mt-2 leading-tight pr-2">
+                  {detail.h.label}
+                </h4>
 
                 <p className="text-[11px] text-white/50 mt-2 uppercase tracking-[0.25em]">
                   {detail.room.name}

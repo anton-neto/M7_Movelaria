@@ -119,6 +119,61 @@ function FovZoom({
   return null;
 }
 
+/** Pinch-to-zoom for touch devices — mirrors FovZoom's wheel behavior, since
+ * OrbitControls' own touch dolly is disabled (enableZoom=false) here. */
+function PinchZoom({
+  controlsRef,
+  minFov,
+  maxFov,
+}: {
+  controlsRef: React.RefObject<OrbitControlsImpl | null>;
+  minFov: number;
+  maxFov: number;
+}) {
+  const { camera, gl } = useThree();
+  useEffect(() => {
+    const el = gl.domElement;
+    const cam = camera as THREE.PerspectiveCamera;
+    let lastDist: number | null = null;
+
+    const distance = (touches: TouchList) => {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.hypot(dx, dy);
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 2) {
+        lastDist = null;
+        return;
+      }
+      e.preventDefault();
+      const d = distance(e.touches);
+      if (lastDist != null) {
+        const delta = lastDist - d;
+        const next = THREE.MathUtils.clamp(cam.fov + delta * 0.15, minFov, maxFov);
+        cam.fov = next;
+        cam.updateProjectionMatrix();
+        controlsRef.current?.update();
+      }
+      lastDist = d;
+    };
+    const onTouchEnd = () => {
+      lastDist = null;
+    };
+
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd);
+    el.addEventListener("touchcancel", onTouchEnd);
+    return () => {
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("touchcancel", onTouchEnd);
+    };
+  }, [camera, gl, controlsRef, minFov, maxFov]);
+  return null;
+}
+
 /** Resets the camera FOV back to default whenever the panorama source or default changes. */
 function FovReset({ src, defaultFov }: { src: string; defaultFov: number }) {
   const { camera } = useThree();
@@ -300,6 +355,7 @@ export function PanoramaViewer({
           maxPolarAngle={Math.PI - 0.25}
         />
         <FovZoom controlsRef={controls} minFov={minFov} maxFov={maxFov} />
+        <PinchZoom controlsRef={controls} minFov={minFov} maxFov={maxFov} />
         <CameraHotspotFocus
           controlsRef={controls}
           target={focusTarget}
@@ -310,11 +366,19 @@ export function PanoramaViewer({
 
       {/* 360° badge */}
       <div
-        className={`absolute top-5 right-5 z-30 flex items-center gap-2 bg-black/60 backdrop-blur text-white border border-bronze/40 uppercase pointer-events-none ${
-          fullscreen ? "gap-3 text-lg px-5 py-3" : "gap-2 text-[11px] px-3 py-2"
+        className={`absolute top-3 right-3 sm:top-5 sm:right-5 z-30 flex items-center bg-black/60 backdrop-blur text-white border border-bronze/40 uppercase pointer-events-none ${
+          fullscreen
+            ? "gap-1.5 text-[10px] px-2.5 py-1.5 sm:gap-3 sm:text-lg sm:px-5 sm:py-3"
+            : "gap-1.5 text-[9px] px-2.5 py-1.5 sm:gap-2 sm:text-[11px] sm:px-3 sm:py-2"
         }`}
       >
-        <RotateCw className={fullscreen ? "w-6 h-6 text-bronze" : "w-3.5 h-3.5 text-bronze"} />
+        <RotateCw
+          className={
+            fullscreen
+              ? "w-3 h-3 sm:w-6 sm:h-6 text-bronze"
+              : "w-3 h-3 sm:w-3.5 sm:h-3.5 text-bronze"
+          }
+        />
         360°
       </div>
 
@@ -322,13 +386,16 @@ export function PanoramaViewer({
       {onBack && (
         <button
           onClick={onBack}
-          className={`absolute top-5 left-5 z-30 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur text-white uppercase transition-colors border ${
+          className={`absolute top-3 left-3 sm:top-5 sm:left-5 z-30 flex items-center bg-black/60 hover:bg-black/80 backdrop-blur text-white uppercase transition-colors border border-white/15 ${
             fullscreen
-              ? "gap-3 text-lg px-6 py-3 border-white/15"
-              : "gap-2 text-[11px] px-4 py-2 border-white/15"
+              ? "gap-1.5 text-[10px] px-2.5 py-1.5 sm:gap-3 sm:text-lg sm:px-6 sm:py-3"
+              : "gap-1.5 text-[9px] px-2.5 py-1.5 sm:gap-2 sm:text-[11px] sm:px-4 sm:py-2"
           }`}
         >
-          <ChevronLeft className={fullscreen ? "w-6 h-6" : "w-4 h-4"} /> Voltar à planta
+          <ChevronLeft
+            className={fullscreen ? "w-3.5 h-3.5 sm:w-6 sm:h-6" : "w-3.5 h-3.5 sm:w-4 sm:h-4"}
+          />
+          Voltar à planta
         </button>
       )}
 
@@ -359,12 +426,22 @@ export function PanoramaViewer({
         </div>
       )}
 
+      {/*
+        Mobile: anchored bottom-right, right next to the fullscreen toggle button
+        (right-16, not centered), sized to its short text on one line, centered within
+        its own pill. sm and up: centered, single line, there's enough room there.
+      */}
       <div
-        className={`absolute bottom-4 left-1/2 -translate-x-1/2 z-30 bg-black/60 backdrop-blur text-white/80 tracking-widest border border-white/10 uppercase pointer-events-none ${
-          fullscreen ? "text-base px-6 py-3" : "text-[11px] px-4 py-2"
+        className={`absolute bottom-3 right-16 sm:right-auto sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2 z-30 w-max whitespace-nowrap text-center bg-black/60 backdrop-blur text-white/80 tracking-normal sm:tracking-widest border border-white/10 uppercase pointer-events-none ${
+          fullscreen
+            ? "text-[7px] px-2 py-1.5 sm:text-base sm:px-6 sm:py-3"
+            : "text-[7px] px-2 py-1.5 sm:text-[11px] sm:px-4 sm:py-2"
         }`}
       >
-        Arraste para olhar · Scroll para zoom · Clique nos pontos dourados
+        <span className="sm:hidden">Arraste · Belisque</span>
+        <span className="hidden sm:inline">
+          Arraste para olhar · Scroll para zoom · Clique nos pontos dourados
+        </span>
       </div>
     </div>
   );

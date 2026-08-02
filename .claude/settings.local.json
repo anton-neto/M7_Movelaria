@@ -33,7 +33,8 @@
       "Read(//c/Users/anton/AppData/Local/Temp/claude/c--Users-anton-OneDrive-Desktop-Project-Harmony-Suite/6d528808-a5d6-499e-9949-f7ed060a820d/scratchpad/**)",
       "Bash(curl -s http://localhost:8080/showroom-3d -o /tmp/out5.html)",
       "Bash(powershell.exe -NoProfile -Command 'Add-Type -AssemblyName System.Drawing; Get-ChildItem '\\\\''c:\\\\Users\\\\anton\\\\OneDrive\\\\Desktop\\\\Project Harmony Suite\\\\src\\\\assets\\\\pano-*.jpg'\\\\'' | ForEach-Object { $img = [System.Drawing.Image]::FromFile\\($_.FullName\\); '\\\\''{0}: {1}x{2} \\({3:N0} KB\\)'\\\\'' -f $_.Name, $img.Width, $img.Height, \\($_.Length/1KB\\); $img.Dispose\\(\\) }')",
-      "Bash(powershell.exe -NoProfile -Command 'Add-Type -AssemblyName System.Drawing; $img = [System.Drawing.Image]::FromFile\\('\\\\''c:\\\\Users\\\\anton\\\\OneDrive\\\\Desktop\\\\Project Harmony Suite\\\\src\\\\assets\\\\pano-kitchen.jpg'\\\\''\\); '\\\\''{0}x{1}'\\\\'' -f $img.Width, $img.Height; $img.Dispose\\(\\)')"
+      "Bash(powershell.exe -NoProfile -Command 'Add-Type -AssemblyName System.Drawing; $img = [System.Drawing.Image]::FromFile\\('\\\\''c:\\\\Users\\\\anton\\\\OneDrive\\\\Desktop\\\\Project Harmony Suite\\\\src\\\\assets\\\\pano-kitchen.jpg'\\\\''\\); '\\\\''{0}x{1}'\\\\'' -f $img.Width, $img.Height; $img.Dispose\\(\\)')",
+      "Bash(curl -s http://localhost:8080/showroom-3d -o /tmp/mobile_check.html)"
     ]
   }
 }
