@@ -93,14 +93,16 @@ function Showroom3DPage() {
       document.exitFullscreen().catch(() => {});
       return;
     }
-    // Touch devices get wildly inconsistent results from the native Fullscreen API
-    // across mobile browsers (works great on some, silently fails to actually resize
-    // on others) — the CSS fallback is fully within our control and behaves the same
-    // everywhere, so skip native entirely there and only use it on desktop/mouse input.
-    const isTouchDevice =
-      typeof window !== "undefined" &&
-      (navigator.maxTouchPoints > 0 || "ontouchstart" in window);
-    if (!isTouchDevice && document.fullscreenEnabled && viewerRef.current) {
+    // iOS Safari (iPhone/iPad) is the one platform where the native Fullscreen API is
+    // unreliable — it can report itself as supported yet silently fail to actually
+    // resize the element. Android Chrome/Firefox/Samsung Internet and desktop browsers
+    // all handle it properly (true edge-to-edge, browser chrome hidden), so only iOS
+    // gets routed to the CSS fallback.
+    const isIOS =
+      typeof navigator !== "undefined" &&
+      (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
+    if (!isIOS && document.fullscreenEnabled && viewerRef.current) {
       viewerRef.current.requestFullscreen().catch(() => setCssFullscreen(true));
     } else {
       setCssFullscreen(true);
