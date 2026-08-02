@@ -18,7 +18,22 @@
       "Read(//tmp/**)",
       "Bash(curl -s -o /dev/null -w \"showroom-3d: %{http_code}\\\\n\" http://localhost:8080/showroom-3d)",
       "Bash(curl -s -o /dev/null -w \"home: %{http_code}\\\\n\" http://localhost:8080/)",
-      "Bash(curl -s -o /dev/null -w \"projetos: %{http_code}\\\\n\" http://localhost:8080/projetos)"
+      "Bash(curl -s -o /dev/null -w \"projetos: %{http_code}\\\\n\" http://localhost:8080/projetos)",
+      "Bash(curl -s http://localhost:8080/showroom-3d -o /tmp/out2.html)",
+      "Bash(powershell.exe -NoProfile -Command \"Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force\")",
+      "Bash(sleep 6; cat \"/c/Users/anton/AppData/Local/Temp/claude/c--Users-anton-OneDrive-Desktop-Project-Harmony-Suite/6d528808-a5d6-499e-9949-f7ed060a820d/tasks/bm37nxjrl.output\" 2>&1 | tail -30)",
+      "Bash(curl -s http://localhost:8080/showroom-3d -o /tmp/out3.html)",
+      "Bash(grep -a -o \"HALL DE ENTRADA\\\\|SALA DE ESTAR\" /tmp/out3.html | head -5 *)",
+      "Bash(sleep 6; head -15 \"/c/Users/anton/AppData/Local/Temp/claude/c--Users-anton-OneDrive-Desktop-Project-Harmony-Suite/6d528808-a5d6-499e-9949-f7ed060a820d/tasks/blke9274o.output\")",
+      "Bash(curl -s -o /dev/null -w \"favicon: %{http_code}\\\\n\" http://localhost:8080/favicon.svg)",
+      "Bash(curl -s http://localhost:8080/showroom-3d -o /tmp/out4.html)",
+      "Bash(sleep 2; tail -20 \"/c/Users/anton/AppData/Local/Temp/claude/c--Users-anton-OneDrive-Desktop-Project-Harmony-Suite/6d528808-a5d6-499e-9949-f7ed060a820d/tasks/blke9274o.output\")",
+      "Bash(mkdir -p \"/c/Users/anton/AppData/Local/Temp/claude/c--Users-anton-OneDrive-Desktop-Project-Harmony-Suite/6d528808-a5d6-499e-9949-f7ed060a820d/scratchpad/pano-backup\")",
+      "Bash(cp \"/c/Users/anton/OneDrive/Desktop/Project Harmony Suite/src/assets/pano-\"*.jpg \"/c/Users/anton/AppData/Local/Temp/claude/c--Users-anton-OneDrive-Desktop-Project-Harmony-Suite/6d528808-a5d6-499e-9949-f7ed060a820d/scratchpad/pano-backup/\")",
+      "Read(//c/Users/anton/AppData/Local/Temp/claude/c--Users-anton-OneDrive-Desktop-Project-Harmony-Suite/6d528808-a5d6-499e-9949-f7ed060a820d/scratchpad/**)",
+      "Bash(curl -s http://localhost:8080/showroom-3d -o /tmp/out5.html)",
+      "Bash(powershell.exe -NoProfile -Command 'Add-Type -AssemblyName System.Drawing; Get-ChildItem '\\\\''c:\\\\Users\\\\anton\\\\OneDrive\\\\Desktop\\\\Project Harmony Suite\\\\src\\\\assets\\\\pano-*.jpg'\\\\'' | ForEach-Object { $img = [System.Drawing.Image]::FromFile\\($_.FullName\\); '\\\\''{0}: {1}x{2} \\({3:N0} KB\\)'\\\\'' -f $_.Name, $img.Width, $img.Height, \\($_.Length/1KB\\); $img.Dispose\\(\\) }')",
+      "Bash(powershell.exe -NoProfile -Command 'Add-Type -AssemblyName System.Drawing; $img = [System.Drawing.Image]::FromFile\\('\\\\''c:\\\\Users\\\\anton\\\\OneDrive\\\\Desktop\\\\Project Harmony Suite\\\\src\\\\assets\\\\pano-kitchen.jpg'\\\\''\\); '\\\\''{0}x{1}'\\\\'' -f $img.Width, $img.Height; $img.Dispose\\(\\)')"
     ]
   }
 }

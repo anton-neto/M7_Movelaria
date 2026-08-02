@@ -55,7 +55,8 @@ export const rooms: Room[] = [
         categoria: "Marcenaria",
         marca: "M7 Movelaria",
         modelo: "Painel muxarabi em MDF Nogueira 15mm — corte CNC",
-        detalhe: "Padrão geométrico exclusivo com iluminação LED 3000K por trás, criando efeito de luz filtrada.",
+        detalhe:
+          "Padrão geométrico exclusivo com iluminação LED 3000K por trás, criando efeito de luz filtrada.",
       },
       {
         id: "espelho-hall",
@@ -65,7 +66,8 @@ export const rooms: Room[] = [
         categoria: "Acabamento",
         marca: "M7 Serralheria",
         modelo: "Espelho orgânico com moldura em serralheria preta fosca",
-        detalhe: "Formato assimétrico desenhado sob medida, moldura em aço 3mm pintura eletrostática.",
+        detalhe:
+          "Formato assimétrico desenhado sob medida, moldura em aço 3mm pintura eletrostática.",
       },
       {
         id: "console-hall",
@@ -252,12 +254,13 @@ export const rooms: Room[] = [
       {
         id: "closet-dorm",
         label: "Closet integrado",
-        yaw: 60,
+        yaw: 125,
         pitch: 0,
         categoria: "Ferragem",
         marca: "Rometal",
         modelo: "Kit deslizante RO82 Top Max",
-        detalhe: "Portas de correr em vidro fumê com perfil preto fosco e cabideiro Vesto iluminado.",
+        detalhe:
+          "Portas de correr em vidro fumê com perfil preto fosco e cabideiro Vesto iluminado.",
       },
     ],
     x: 20,
@@ -275,7 +278,7 @@ export const rooms: Room[] = [
       {
         id: "cabideiro",
         label: "Cabideiro Vesto",
-        yaw: -30,
+        yaw: 117,
         pitch: 5,
         categoria: "Ferragem",
         marca: "Rometal",
@@ -285,7 +288,7 @@ export const rooms: Room[] = [
       {
         id: "vitrine",
         label: "Vitrine em Serralheria",
-        yaw: 35,
+        yaw: -126,
         pitch: 0,
         categoria: "Acabamento",
         marca: "M7 Serralheria",
@@ -318,7 +321,7 @@ export const rooms: Room[] = [
       {
         id: "estante",
         label: "Estante iluminada",
-        yaw: -15,
+        yaw: -47,
         pitch: 8,
         categoria: "Marcenaria",
         marca: "M7 Movelaria",
@@ -361,12 +364,13 @@ export const rooms: Room[] = [
       {
         id: "racks-adega",
         label: "Racks em Nogueira",
-        yaw: -30,
+        yaw: -65,
         pitch: 0,
         categoria: "Marcenaria",
         marca: "M7 Movelaria",
         modelo: "MDF Nogueira 25mm com nichos individuais",
-        detalhe: "Nichos calculados para garrafas Bordeaux e Borgonha, com LED 3000K por prateleira.",
+        detalhe:
+          "Nichos calculados para garrafas Bordeaux e Borgonha, com LED 3000K por prateleira.",
       },
       {
         id: "mesa-adega",
@@ -381,12 +385,13 @@ export const rooms: Room[] = [
       {
         id: "vidro-adega",
         label: "Fechamento em serralheria",
-        yaw: 90,
+        yaw: 128,
         pitch: 0,
         categoria: "Ferragem",
         marca: "M7 Serralheria",
         modelo: "Perfil preto fosco + vidro temperado 8mm",
-        detalhe: "Portas pivotantes com dobradiças Salice de alta carga, vedação para climatização.",
+        detalhe:
+          "Portas pivotantes com dobradiças Salice de alta carga, vedação para climatização.",
       },
     ],
     x: 70,

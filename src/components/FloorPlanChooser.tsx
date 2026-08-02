@@ -1,13 +1,25 @@
 import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import floorplan from "@/assets/floorplan-iso.jpg";
 import type { Room } from "@/data/rooms";
+
+type ProjectOption = { slug: string; name: string; client: string };
 
 type Props = {
   rooms: Room[];
   onSelectRoom: (roomId: string) => void;
+  projects: ProjectOption[];
+  selectedProjectSlug: string;
+  onSelectProject: (slug: string) => void;
 };
 
-export function FloorPlanChooser({ rooms, onSelectRoom }: Props) {
+export function FloorPlanChooser({
+  rooms,
+  onSelectRoom,
+  projects,
+  selectedProjectSlug,
+  onSelectProject,
+}: Props) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   return (
@@ -28,27 +40,24 @@ export function FloorPlanChooser({ rooms, onSelectRoom }: Props) {
         </h2>
       </div>
 
-      {/* Room list — same selection as the markers, easier to scan/click on any device */}
-      <nav className="absolute top-24 left-4 md:left-8 bottom-16 w-44 md:w-56 overflow-y-auto bg-black/55 backdrop-blur border border-white/10 py-2">
-        {rooms.map((room, i) => (
-          <button
-            key={room.id}
-            onClick={() => onSelectRoom(room.id)}
-            onMouseEnter={() => setHoveredId(room.id)}
-            onMouseLeave={() => setHoveredId((cur) => (cur === room.id ? null : cur))}
-            className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-xs uppercase tracking-widest transition-colors ${
-              hoveredId === room.id
-                ? "bg-bronze text-white"
-                : "text-white/70 hover:text-white hover:bg-white/10"
-            }`}
+      {/* Project/model selector — switches between different 3D-toured properties, not rooms */}
+      <div className="absolute top-5 right-5">
+        <label className="relative block">
+          <span className="sr-only">Selecionar projeto 3D</span>
+          <select
+            value={selectedProjectSlug}
+            onChange={(e) => onSelectProject(e.target.value)}
+            className="appearance-none bg-black/60 backdrop-blur border border-white/15 text-white text-[11px] uppercase tracking-widest pl-4 pr-9 py-2.5 cursor-pointer hover:border-bronze/60 focus:outline-none focus:border-bronze"
           >
-            <span className="shrink-0 w-5 h-5 rounded-full border border-current flex items-center justify-center text-[10px]">
-              {i + 1}
-            </span>
-            {room.name}
-          </button>
-        ))}
-      </nav>
+            {projects.map((p) => (
+              <option key={p.slug} value={p.slug} className="bg-ink text-white">
+                {p.name} — {p.client}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-bronze" />
+        </label>
+      </div>
 
       {rooms.map((room, i) => (
         <button

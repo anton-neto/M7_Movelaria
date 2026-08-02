@@ -16,16 +16,23 @@ type Props = {
   rooms?: RoomNavItem[];
   activeRoomId?: string;
   onNavigateRoom?: (roomId: string) => void;
+  fullscreen?: boolean;
 };
 
 const CAMERA_RADIUS = 0.0001;
+// The source panoramas are a fixed 3840x1920. A narrower FOV (more "zoom") stretches
+// fewer of those source pixels across the viewport — the wider the render surface,
+// the more that stretch shows up as blur. In fullscreen the canvas can be 2-3x wider
+// than the normal embedded player, so we widen the FOV range a bit to avoid piling
+// extra magnification on top of that. Kept modest: pushing FOV too wide over-corrects
+// into fisheye-style stretching at the edges of the frame, trading center sharpness
+// for blurrier corners.
 const DEFAULT_FOV = 90;
 const MIN_FOV = 55;
 const MAX_FOV = 100;
-// Kept within the same [MIN_FOV, MAX_FOV] range as manual scroll-zoom: the source
-// panoramas are 1920x960, so zooming past that starts magnifying past their native
-// resolution and turns visibly blurry.
-const FOCUS_FOV = MIN_FOV;
+const FULLSCREEN_DEFAULT_FOV = 96;
+const FULLSCREEN_MIN_FOV = 62;
+const FULLSCREEN_MAX_FOV = 106;
 const FOCUS_DURATION_MS = 650;
 
 /**
@@ -86,32 +93,40 @@ function PanoramaSphere({ src }: { src: string }) {
 }
 
 /** FOV-based zoom (like Google Street View) instead of moving the camera. */
-function FovZoom({ controlsRef }: { controlsRef: React.RefObject<OrbitControlsImpl | null> }) {
+function FovZoom({
+  controlsRef,
+  minFov,
+  maxFov,
+}: {
+  controlsRef: React.RefObject<OrbitControlsImpl | null>;
+  minFov: number;
+  maxFov: number;
+}) {
   const { camera, gl } = useThree();
   useEffect(() => {
     const el = gl.domElement;
     const cam = camera as THREE.PerspectiveCamera;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      const next = THREE.MathUtils.clamp(cam.fov + e.deltaY * 0.04, MIN_FOV, MAX_FOV);
+      const next = THREE.MathUtils.clamp(cam.fov + e.deltaY * 0.04, minFov, maxFov);
       cam.fov = next;
       cam.updateProjectionMatrix();
       controlsRef.current?.update();
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
-  }, [camera, gl, controlsRef]);
+  }, [camera, gl, controlsRef, minFov, maxFov]);
   return null;
 }
 
-/** Resets the camera FOV back to default whenever the panorama source changes. */
-function FovReset({ src }: { src: string }) {
+/** Resets the camera FOV back to default whenever the panorama source or default changes. */
+function FovReset({ src, defaultFov }: { src: string; defaultFov: number }) {
   const { camera } = useThree();
   useEffect(() => {
     const cam = camera as THREE.PerspectiveCamera;
-    cam.fov = DEFAULT_FOV;
+    cam.fov = defaultFov;
     cam.updateProjectionMatrix();
-  }, [src, camera]);
+  }, [src, defaultFov, camera]);
   return null;
 }
 
@@ -119,10 +134,12 @@ function FovReset({ src }: { src: string }) {
 function CameraHotspotFocus({
   controlsRef,
   target,
+  focusFov,
   onArrive,
 }: {
   controlsRef: React.RefObject<OrbitControlsImpl | null>;
   target: { yaw: number; pitch: number; nonce: number } | null;
+  focusFov: number;
   onArrive: () => void;
 }) {
   const { camera } = useThree();
@@ -143,10 +160,10 @@ function CameraHotspotFocus({
     if (controlsRef.current) controlsRef.current.enabled = false;
     anim.current = {
       from: { yaw: cur.yaw, pitch: cur.pitch, fov: cam.fov },
-      to: { yaw: target.yaw, pitch: target.pitch, fov: FOCUS_FOV },
+      to: { yaw: target.yaw, pitch: target.pitch, fov: focusFov },
       start: performance.now(),
     };
-  }, [target, camera, controlsRef]);
+  }, [target, camera, controlsRef, focusFov]);
 
   useFrame(() => {
     const a = anim.current;
@@ -184,9 +201,13 @@ export function PanoramaViewer({
   rooms,
   activeRoomId,
   onNavigateRoom,
+  fullscreen = false,
 }: Props) {
   const controls = useRef<OrbitControlsImpl>(null);
   const [ready, setReady] = useState(false);
+  const defaultFov = fullscreen ? FULLSCREEN_DEFAULT_FOV : DEFAULT_FOV;
+  const minFov = fullscreen ? FULLSCREEN_MIN_FOV : MIN_FOV;
+  const maxFov = fullscreen ? FULLSCREEN_MAX_FOV : MAX_FOV;
   const [focusTarget, setFocusTarget] = useState<{
     yaw: number;
     pitch: number;
@@ -223,12 +244,12 @@ export function PanoramaViewer({
   return (
     <div className="relative h-full w-full bg-black">
       <Canvas
-        dpr={[1, 2]}
+        dpr={fullscreen ? [1, 2.5] : [1, 2]}
         gl={{ antialias: true, powerPreference: "high-performance" }}
-        camera={{ fov: DEFAULT_FOV, near: 0.1, far: 1100, position: [0, 0, CAMERA_RADIUS] }}
+        camera={{ fov: defaultFov, near: 0.1, far: 1100, position: [0, 0, CAMERA_RADIUS] }}
       >
         <Suspense fallback={null}>
-          <FovReset src={src} />
+          <FovReset src={src} defaultFov={defaultFov} />
           <PanoramaSphere src={src} />
           {ready &&
             positions.map(({ h, pos }) => (
@@ -247,11 +268,21 @@ export function PanoramaViewer({
                   className="group relative flex items-center justify-center"
                   aria-label={h.label}
                 >
-                  <span className="absolute inset-0 m-auto w-12 h-12 rounded-full bg-bronze/40 animate-ping" />
-                  <span className="relative flex items-center justify-center w-12 h-12 rounded-full bg-bronze/90 border-2 border-white/95 shadow-[0_0_25px_rgba(176,138,74,0.9)] backdrop-blur transition-transform group-hover:scale-110">
-                    <Plus className="w-5 h-5 text-white" />
+                  <span
+                    className={`absolute inset-0 m-auto rounded-full bg-bronze/40 animate-ping ${fullscreen ? "w-20 h-20" : "w-12 h-12"}`}
+                  />
+                  <span
+                    className={`relative flex items-center justify-center rounded-full bg-bronze/90 border-2 border-white/95 shadow-[0_0_25px_rgba(176,138,74,0.9)] backdrop-blur transition-transform group-hover:scale-110 ${fullscreen ? "w-20 h-20" : "w-12 h-12"}`}
+                  >
+                    <Plus className={fullscreen ? "w-9 h-9 text-white" : "w-5 h-5 text-white"} />
                   </span>
-                  <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 whitespace-nowrap px-3 py-1 text-[10px] uppercase tracking-[0.25em] bg-black/85 border border-bronze/40 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span
+                    className={`pointer-events-none absolute left-1/2 -translate-x-1/2 top-full whitespace-nowrap uppercase bg-black/85 border border-bronze/40 text-white opacity-0 group-hover:opacity-100 transition-opacity ${
+                      fullscreen
+                        ? "mt-3 px-5 py-2 text-base tracking-[0.2em]"
+                        : "mt-2 px-3 py-1 text-[10px] tracking-[0.25em]"
+                    }`}
+                  >
                     {h.label}
                   </span>
                 </button>
@@ -268,13 +299,22 @@ export function PanoramaViewer({
           minPolarAngle={0.25}
           maxPolarAngle={Math.PI - 0.25}
         />
-        <FovZoom controlsRef={controls} />
-        <CameraHotspotFocus controlsRef={controls} target={focusTarget} onArrive={handleArrive} />
+        <FovZoom controlsRef={controls} minFov={minFov} maxFov={maxFov} />
+        <CameraHotspotFocus
+          controlsRef={controls}
+          target={focusTarget}
+          focusFov={minFov}
+          onArrive={handleArrive}
+        />
       </Canvas>
 
       {/* 360° badge */}
-      <div className="absolute top-5 right-5 flex items-center gap-2 bg-black/60 backdrop-blur text-white text-[11px] tracking-widest px-3 py-2 border border-bronze/40 uppercase pointer-events-none">
-        <RotateCw className="w-3.5 h-3.5 text-bronze" />
+      <div
+        className={`absolute top-5 right-5 z-30 flex items-center gap-2 bg-black/60 backdrop-blur text-white border border-bronze/40 uppercase pointer-events-none ${
+          fullscreen ? "gap-3 text-lg px-5 py-3" : "gap-2 text-[11px] px-3 py-2"
+        }`}
+      >
+        <RotateCw className={fullscreen ? "w-6 h-6 text-bronze" : "w-3.5 h-3.5 text-bronze"} />
         360°
       </div>
 
@@ -282,20 +322,32 @@ export function PanoramaViewer({
       {onBack && (
         <button
           onClick={onBack}
-          className="absolute top-5 left-5 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur text-white text-[11px] tracking-widest px-4 py-2 border border-white/15 uppercase transition-colors"
+          className={`absolute top-5 left-5 z-30 flex items-center gap-2 bg-black/60 hover:bg-black/80 backdrop-blur text-white uppercase transition-colors border ${
+            fullscreen
+              ? "gap-3 text-lg px-6 py-3 border-white/15"
+              : "gap-2 text-[11px] px-4 py-2 border-white/15"
+          }`}
         >
-          <ChevronLeft className="w-4 h-4" /> Voltar à planta
+          <ChevronLeft className={fullscreen ? "w-6 h-6" : "w-4 h-4"} /> Voltar à planta
         </button>
       )}
 
       {/* Room-to-room navigation */}
       {rooms && rooms.length > 1 && onNavigateRoom && (
-        <div className="absolute top-5 left-1/2 -translate-x-1/2 hidden md:flex items-center gap-1 bg-black/60 backdrop-blur border border-white/10 px-2 py-2 max-w-[60vw] overflow-x-auto">
+        <div
+          className={`absolute top-5 left-1/2 -translate-x-1/2 z-30 hidden md:flex items-center bg-black/60 backdrop-blur border border-white/10 max-w-[60vw] overflow-x-auto ${
+            fullscreen ? "gap-2 px-3 py-3" : "gap-1 px-2 py-2"
+          }`}
+        >
           {rooms.map((r) => (
             <button
               key={r.id}
               onClick={() => onNavigateRoom(r.id)}
-              className={`whitespace-nowrap px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors ${
+              className={`whitespace-nowrap uppercase transition-colors ${
+                fullscreen
+                  ? "px-5 py-2.5 text-sm tracking-wider"
+                  : "px-3 py-1.5 text-[10px] tracking-widest"
+              } ${
                 r.id === activeRoomId
                   ? "bg-bronze text-white"
                   : "text-white/60 hover:text-white hover:bg-white/10"
@@ -307,7 +359,11 @@ export function PanoramaViewer({
         </div>
       )}
 
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur text-white/80 text-[11px] tracking-widest px-4 py-2 border border-white/10 uppercase pointer-events-none">
+      <div
+        className={`absolute bottom-4 left-1/2 -translate-x-1/2 z-30 bg-black/60 backdrop-blur text-white/80 tracking-widest border border-white/10 uppercase pointer-events-none ${
+          fullscreen ? "text-base px-6 py-3" : "text-[11px] px-4 py-2"
+        }`}
+      >
         Arraste para olhar · Scroll para zoom · Clique nos pontos dourados
       </div>
     </div>

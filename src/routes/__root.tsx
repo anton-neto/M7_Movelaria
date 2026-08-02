@@ -78,17 +78,29 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "M7 Movelaria — Showroom Digital" },
-      { name: "description", content: "Showroom digital da M7 Movelaria: projetos de alto padrão com marcenaria sob medida, ferragens Häfele e acabamentos premium." },
+      {
+        name: "description",
+        content:
+          "Showroom digital da M7 Movelaria: projetos de alto padrão com marcenaria sob medida, ferragens Häfele e acabamentos premium.",
+      },
       { property: "og:title", content: "M7 Movelaria — Showroom Digital" },
-      { property: "og:description", content: "Explore projetos de marcenaria de luxo com hotspots interativos de materiais e ferragens." },
+      {
+        property: "og:description",
+        content:
+          "Explore projetos de marcenaria de luxo com hotspots interativos de materiais e ferragens.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap",
+      },
     ],
     scripts: [
       {
