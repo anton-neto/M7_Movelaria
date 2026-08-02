@@ -433,7 +433,7 @@ export function PanoramaViewer({
             : "text-[9px] px-2.5 py-1.5 sm:text-[11px] sm:px-4 sm:py-2"
         }`}
       >
-        <span className="sm:hidden">Arraste</span>
+        <span className="sm:hidden">Arraste a tela</span>
         <span className="hidden sm:inline">
           Arraste para olhar · Scroll para zoom · Clique nos pontos dourados
         </span>

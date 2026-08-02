@@ -133,7 +133,7 @@ function Showroom3DPage() {
             ref={viewerRef}
             className={`relative w-full border border-bronze/20 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] overflow-hidden bg-black ${
               cssFullscreen
-                ? "fixed inset-0 z-[200] h-screen w-screen border-0"
+                ? "fixed inset-0 z-[200] h-[100dvh] w-[100dvw] border-0"
                 : "h-[55vh] min-h-[380px] sm:h-[70vh] sm:min-h-[500px] md:h-[75vh] md:min-h-[560px]"
             }`}
           >
